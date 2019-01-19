@@ -1,7 +1,9 @@
 # ssl_certificates_generator
 
 Simple ssl certificate generator :
-It work in two step, the [first Step](https://github.com/AntoineGuerra/ssl_certificates_generator/blob/master/README.md#step-1) generate your certificate with open ssl and configure the name with `${company}-${currentYear}.key` and `${company}.csr`.<br>
+It work in two step, the [first Step](https://github.com/AntoineGuerra/ssl_certificates_generator/blob/master/README.md#step-1) generate your certificate with open ssl and configure the name with `${company}-${currentYear}.key` and `${company}.csr`.
+<br>
+You can Generate [multi certificate](https://github.com/AntoineGuerra/ssl_certificates_generator/blob/master/README.md#only-if-youve-to-generate-multi-certificate-)<br>
 The [second step](https://github.com/AntoineGuerra/ssl_certificates_generator/blob/master/README.md#step-2) work after you've downloaded you certificate by an SSL Distributor like [Gandi](https://www.gandi.net/fr)<br>
 This step create a full chain certificate with (`certificate.crt` + `middleCert.pem`)
 
