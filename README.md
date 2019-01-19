@@ -39,7 +39,13 @@ consider you have brew installed <https://brew.sh/>
 ```
 $ brew install expect
 ```
-
+##### Xclip is required
+###### On Linux
+```
+$ sudo apt-get install xclip 
+```
+###### On MAC OS
+Consider you have pbcopy installed
 ### Installing
 Please run :
 ```

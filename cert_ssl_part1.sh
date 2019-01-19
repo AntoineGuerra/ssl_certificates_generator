@@ -72,13 +72,18 @@ getOptions() {
     done
 }
 
-moveCerts() {
-    if [[ ${path_to_pki_tls_certificates_directory} != './' && ${path_to_pki_tls_certificates_directory} != '.' ]]
-    then
+addPathSlash() {
     if [[ !(${path_to_pki_tls_certificates_directory} =~ (.*)\/$) ]]
     then
         path_to_pki_tls_certificates_directory="${path_to_pki_tls_certificates_directory}/"
     fi
+
+}
+
+moveCerts() {
+    if [[ ${path_to_pki_tls_certificates_directory} != './' && ${path_to_pki_tls_certificates_directory} != '.' ]]
+    then
+        addPathSlash
         if [[ !(-d ${path_to_pki_tls_certificates_directory}${company_name}) ]]
         then
             mkdir ${path_to_pki_tls_certificates_directory}${company_name}
@@ -105,7 +110,6 @@ checkCertFilesData() {
     fi
     for data in ${datas[@]}
     do
-        echo $data
         value=$(eval echo "\$$data")
         if [[ $value = '' ]]
         then
@@ -116,7 +120,24 @@ checkCertFilesData() {
     done
 }
 
-
+generateCertificate() {
+    ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
+    moveCerts
+    addPathSlash
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    # ...
+        echo -e $(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr) | xclip -selection clipboard
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # Mac OSX
+        echo -e "$(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr)" | pbcopy -selection clipboard
+    fi
+    textResult="${color_success}${company_name}.csr generated with success !"
+    textResult="${textResult}${color_info} in ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr\n"
+    textResult="${textResult}${color_info}The following file content of ${color_success}${company_name}.csr${color_info} was copy to your clipboard\n"
+    textResult="${textResult}${color_default}To send at SSL distributor example : GANDI SSL certificate => https://shop.gandi.net/fr/8d46f180-c3c1-11e7-9db0-00163e6dc886/certificate/create"
+    echo -e "${textResult}"
+    read -n 1 -s -r -p "Press any key to continue"
+}
 
 if [[ $1 = '-h' || $1 = '--help' || $1 = '-help' ]]
 then
@@ -142,9 +163,7 @@ checkCertFilesData ./config.conf
 if [[ ${#certificatesFile[@]} -eq 0 ]]
 then
     getOptions
-    ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
-    moveCerts
-    echo -e "Run :\n${color_success} cat ${path_to_pki_tls_certificates_directory}/${company_name}/${company_name}.csr\n${color_default}To send at SSL distributor example : Gandi"
+    generateCertificate
     echo -e "${color_default}Do you want generate another certificate ? :"
     read -e -r -p "$ " result
     if [[ ${result} = 'y' || ${result} = 'Y' || ${result} = 'yes' || ${result} = 'YES' ]]
@@ -158,9 +177,7 @@ else
     do
         source $certificate
         checkCertFilesData $certificate
-        ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
-        moveCerts
-        echo -e "Run :\n${color_success} cat ${path_to_pki_tls_certificates_directory}/${company_name}/${company_name}.csr\n${color_default}To send at SSL distributor example : Gandi"
+        generateCertificate
     done
 fi
 
