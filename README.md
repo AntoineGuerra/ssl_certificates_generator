@@ -1,6 +1,9 @@
 # ssl_certificates_generator
 
-Simple ssl certificate generator
+Simple ssl certificate generator :
+It work in two step, the first generate your certificate with open ssl and configure the name with `${company}-${currentYear}.key` and `${company}.csr`.<br>
+The second step work after you've downloaded you certificate by an SSL Distributor like [Gandi](https://www.gandi.net/fr)<br>
+This step create a full chain certificate with (`certificate.crt` + `middleCert.pem`)
 
 ## Getting Started
 
@@ -11,7 +14,7 @@ $ git clone https://github.com/AntoineGuerra/ssl_certificates_generator.git
 $ cd ssl_certificates_generator
 ```
 The SSL certificate generator has 2 parts, you can generate your `certificate.csr` `certificate.key`  with the first
-AND you can create the full chain certificate (`certificate.crt` + `middleCert.pem) with the second part
+AND you can create the full chain certificate with the second
 
 ### Prerequisites
 
@@ -63,11 +66,11 @@ $ cat certificate.certgen.sample > certificate2.certgen
 ```
 certificate.certgen example :
 ```
-# Origin company country (2 letters)
+# Company country (2 letters)
 country='FR';
-# Origin company state (leave blank for france)
+# Company state (leave blank for france)
 state='';
-# Origin company city
+# Company city
 city='Lyon';
 # Company name
 company_name='testCompany';
