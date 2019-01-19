@@ -25,6 +25,7 @@ To update it please run :
 $ sudo apt-get update && sudo apt-get install --only-upgrade bash
 ```
 ###### On MAC OS 
+consider you have brew installed <https://brew.sh/>
 ```
 $ brew update && brew install bash
 ```
