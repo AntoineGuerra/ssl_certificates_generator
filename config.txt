@@ -1,0 +1,7 @@
+path_to_pki_tls_certificates_directory='./newCertificates/testcompany/'
+
+# Email to administrate certificate (Your email)
+email=''
+
+# Certificate Password
+password=''

@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+#
+# creates a new key/cert pair with openssl
+#
+# usage: ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
+#
+#
+# output: ${company_name}.csr, ${company_name}-${year}.key
+
+set timeout -1
+
+set name [lindex $argv 0];
+set unitName [lindex $argv 1];
+set web [lindex $argv 2];
+set year [lindex $argv 3];
+set country [lindex $argv 4];
+set city [lindex $argv 5];
+set email [lindex $argv 6];
+set state [lindex $argv 7];
+set password [lindex $argv 8];
+
+
+spawn openssl req -nodes -newkey rsa:2048 -sha256 -keyout ${name}-${year}.key -out ${name}.csr
+
+expect -re {Country Name \(2 letter code\) [^:]*:} {send "${country}\n"}
+expect -re {State or Province Name \(full name\) [^:]*:} {send "${state}\n"}
+expect -re {Locality Name \(eg, city\) [^:]*:} {send "${city}\n"}
+expect -re {Organization Name \(eg, company\) [^:]*:} {send "${name}\n"}
+expect -re {Organizational Unit Name \(eg, section\) [^:]*:} {send "${unitName}\n"}
+expect -re {Common Name \(eg, fully qualified host name\) [^:]*:} {send "${web}\n"}
+expect -re {Email Address [^:]*:} {send "${email}\n"}
+expect -re {A challenge password [^:]*:} {send "${password}\n"}
+expect eof
