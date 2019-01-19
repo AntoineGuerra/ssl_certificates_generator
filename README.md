@@ -15,8 +15,6 @@ Please, run :
 $ git clone https://github.com/AntoineGuerra/ssl_certificates_generator.git
 $ cd ssl_certificates_generator
 ```
-The SSL certificate generator has 2 parts, you can generate your `certificate.csr` `certificate.key`  with the first
-AND you can create the full chain certificate with the second
 
 ### Prerequisites
 
