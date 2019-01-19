@@ -1,4 +1,4 @@
-path_to_pki_tls_certificates_directory='./newCertificates/testcompany/'
+path_to_pki_tls_certificates_directory='./newCertificates/'
 
 # Email to administrate certificate (Your email)
 email=''

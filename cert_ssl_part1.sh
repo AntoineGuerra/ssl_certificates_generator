@@ -75,12 +75,16 @@ getOptions() {
 moveCerts() {
     if [[ ${path_to_pki_tls_certificates_directory} != './' && ${path_to_pki_tls_certificates_directory} != '.' ]]
     then
-        if [[ !(-d ${path_to_pki_tls_certificates_directory}/${company_name}) ]]
+    if [[ !(${path_to_pki_tls_certificates_directory} =~ (.*)\/$) ]]
+    then
+        path_to_pki_tls_certificates_directory="${path_to_pki_tls_certificates_directory}/"
+    fi
+        if [[ !(-d ${path_to_pki_tls_certificates_directory}${company_name}) ]]
         then
-            mkdir ${path_to_pki_tls_certificates_directory}/${company_name}
+            mkdir ${path_to_pki_tls_certificates_directory}${company_name}
         fi
-        mv ${company_name}-${year}.key ${path_to_pki_tls_certificates_directory}/${company_name}/
-        mv ${company_name}.csr ${path_to_pki_tls_certificates_directory}/${company_name}/
+        mv ${company_name}-${year}.key ${path_to_pki_tls_certificates_directory}${company_name}/
+        mv ${company_name}.csr ${path_to_pki_tls_certificates_directory}${company_name}/
     else
         if [[ !(-d ./${company_name}) ]]
         then
@@ -89,6 +93,29 @@ moveCerts() {
     fi
 
 }
+
+# $1 = file data checked
+checkCertFilesData() {
+    file=$1
+    if [[ ${file} = './config.conf' ]]
+    then
+        datas=('email')
+    else
+        datas=('country' 'city' 'company_name' 'company_unit_name' 'hostname_company')
+    fi
+    for data in ${datas[@]}
+    do
+        echo $data
+        value=$(eval echo "\$$data")
+        if [[ $value = '' ]]
+        then
+            echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
+            echo -e "${color_error}${data//_/ } is REQUIRED !"
+            exit
+        fi
+    done
+}
+
 
 
 if [[ $1 = '-h' || $1 = '--help' || $1 = '-help' ]]
@@ -110,8 +137,8 @@ fi
 
 certificatesFile=($(ls ./newCertificates/*.certgen))
 
-source ./config.txt
-
+source ./config.conf
+checkCertFilesData ./config.conf
 if [[ ${#certificatesFile[@]} -eq 0 ]]
 then
     getOptions
@@ -130,6 +157,7 @@ else
     for certificate in ${certificatesFile[@]}
     do
         source $certificate
+        checkCertFilesData $certificate
         ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
         moveCerts
         echo -e "Run :\n${color_success} cat ${path_to_pki_tls_certificates_directory}/${company_name}/${company_name}.csr\n${color_default}To send at SSL distributor example : Gandi"

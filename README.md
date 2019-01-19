@@ -48,7 +48,28 @@ $ chmod +x *.sh
 ```
 #### Step 1 
 The step 1 generate your `${company_name}.csr` and `${company_name}-${currentYear}.key`<br>
-##### Please configure the `config.txt`
+##### Please configure the `config.conf`
+Run :
+```
+$ cp config.conf.sample config.conf
+```
+OR 
+```
+$ cat config.conf.sample > config.conf
+```
+AND <br>
+Configure your data in config.conf file
+
+Example config.conf :
+```
+path_to_pki_tls_certificates_directory='./newCertificates/'
+
+# Email to administrate certificate (Your email)
+email='example@example.ex'
+
+# Certificate Password
+password='MyP4455W0Rd!'
+```
 
 ##### ONLY IF you've to generate multi certificate :
 Prepare your certificates, run :

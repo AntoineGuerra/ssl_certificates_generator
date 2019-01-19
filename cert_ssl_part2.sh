@@ -41,8 +41,8 @@ renameCertificates() {
         then
             fileName=${BASH_REMATCH[2]}
             path=${BASH_REMATCH[1]}/
-            mv $file ${path}${fileName}-$(date +"%Y").crt
-            certificates+=(${path}${fileName}-$(date +"%Y").crt)
+#            cp $file ${path}${fileName}-$(date +"%Y").crt
+            certificates+=(${path}${fileName}.crt)
         elif [[ $file =~ ([^\/]*)\.pem$ ]]
         then
             name_of_middle_certificate=${file}
@@ -54,14 +54,24 @@ renameCertificates() {
 # $1 = path_to_certificates_directory
 # $2 = name_of_middle_certificate
 createFullChain() {
-    echo 'yeah'
+    if [[ !(${path_to_certificates_directory} =~ (.*)\/$) ]]
+    then
+        path_to_certificates_directory="${path_to_certificates_directory}/"
+    fi
+    if [[ !(-d ${path_to_certificates_directory}${fileName}) ]]
+    then
+        mkdir ${path_to_certificates_directory}${fileName}
+    fi
+
     for certificate in ${certificates[@]}
     do
         echo $certificate
         if [[ $certificate =~ (.*)\/([^\/]*)\.crt$ ]];
         then
+
             fileName=${BASH_REMATCH[2]}
-            cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}/${fileName}-fullchain.crt
+            echo "${path_to_certificates_directory}${fileName}/${fileName}-$(date +"%Y")-fullchain.crt"
+            cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${fileName}/${fileName}-$(date +"%Y")-fullchain.crt
         fi
     done
 
