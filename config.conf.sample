@@ -5,3 +5,6 @@ email=''
 
 # Certificate Password
 password=''
+
+# If you want Enable conf generator for apache | nginx
+use_conf_generator=true

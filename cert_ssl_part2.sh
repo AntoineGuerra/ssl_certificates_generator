@@ -11,21 +11,23 @@ certificates=()
 
 
 addSlash() {
-    if [[ !(${path_to_certificates_directory} =~ (.*)\/$) ]]
+    if [[ ${path_to_certificates_directory} =~ (.*[^\/])\/+$ ]]
     then
-        path_to_certificates_directory="${path_to_certificates_directory}/"
+        path_to_certificates_directory=${BASH_REMATCH[1]}
     fi
+    path_to_certificates_directory="${path_to_certificates_directory}/"
 }
 
 # $1 = file data checked
 checkCertFilesData() {
     file=$1
-#    if [[ ${file} = './config.conf' ]]
-#    then
-#        datas=('email')
-#    else
+    source $file
+    if [[ ${file} = './config.conf' ]]
+    then
+        datas=('use_conf_generator')
+    else
         datas=('company_name' 'hostname_company')
-#    fi
+    fi
     for data in ${datas[@]}
     do
         value=$(eval echo "\$$data")
@@ -33,6 +35,11 @@ checkCertFilesData() {
         then
             echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
             echo -e "${color_error}${data//_/ } is REQUIRED !"
+            exit
+        elif [[ $data = 'use_conf_generator' && ($value != true && $value != false) ]]
+        then
+            echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
+            echo -e "${color_error}${data//_/ } could be a boolean !"
             exit
         fi
     done
@@ -58,6 +65,10 @@ createVal() {
     then
         echo -e "${color_error} ERROR !\n${varName//_/ } could not be empty !"
         createVal $1 $2
+    elif [[ $varName = document_website_root_in_server && $result =~ (.*[^\/])\/+$ ]]
+    then
+        echo -e "${color_error} ERROR !\n${varName//_/ } could not end by '/' !\n${color_warning}Try with ${BASH_REMATCH[1]}"
+        createVal $1 ${BASH_REMATCH[1]}
     fi
     eval "${varName}"="${result}"
     echo -ne "${color_default}"
@@ -76,7 +87,6 @@ getOptions() {
 # $1 = ${path_to_certificates_directory} dir/*.crt&file.pem
 # $2 = name_of_middle_certificate --> file.pem
 renameCertificates() {
-    echo $1
     for file in $1/*
     do
         if [[ $file =~ (.*)\/([^\/]*)\.crt$ ]];
@@ -126,13 +136,20 @@ createdFileMessage() {
 createFullChain() {
     addSlash
 
-    echo -e "Do you want use the apache/nginx conf template generator ?"
-    read -e -r -p "$ " result
+    echo -e "Do you want use the ${color_success}apache/nginx${color_default} conf template generator ?"
+    if [[ ${use_conf_generator} ]]
+    then
+        read -e -r -p "$ " -i "yes" result
+    else
+        read -e -r -p "$ " result
+    fi
     if [[ ${result} =~ ^[yY]{1}e?s?.*$ ]]
     then
-        useConfGenerator=true
+        use_conf_generator=true
+        echo -e "${color_success}You use the conf template generator"
     else
-        useConfGenerator=false
+        echo -e "${color_warning}You don't use the conf template generator"
+        use_conf_generator=false
     fi
     for certificate in ${certificates[@]}
     do
@@ -154,11 +171,11 @@ createFullChain() {
             createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt"
             cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem
             createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem"
-            if [[ $useConfGenerator = true ]]
+            if [[ $use_conf_generator = true ]]
             then
                 createVal 'hostname_without_www' $fileName
-                createVal 'path_to_certificate_in_server' "/etc/pki/tls/certs/${company_name}/"
-                createVal 'document_website_root_in_server' "/var/www/html/${company_name}/"
+                createVal 'path_to_certificate_in_server' "/etc/pki/tls/certs/${company_name}"
+                createVal 'document_website_root_in_server' "/var/www/html/${company_name}"
                 ./conf_generator.sh ${company_name} ${hostname_without_www} ${path_to_certificate_in_server} ${document_website_root_in_server}
             fi
         fi
@@ -173,6 +190,7 @@ then
     path_to_certificates_directory=$1
 fi
 
+checkCertFilesData "./config.conf"
 getOptions
 renameCertificates ${path_to_certificates_directory}
 createFullChain

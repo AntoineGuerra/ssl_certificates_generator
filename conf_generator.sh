@@ -21,14 +21,17 @@ else
 fi
 
 addSlash() {
-    if [[ !(${path_to_certs} =~ (.*)\/$) ]]
+    if [[ ${path_to_certs} =~ (.*[^\/])\/+$ ]]
     then
-        path_to_certs="${path_to_certs}/"
+        path_to_certs=${BASH_REMATCH[1]}
     fi
-    if [[ !(${path_to_document_root} =~ (.*)\/$) ]]
+    path_to_certs="${path_to_certs}/"
+    if [[ ${path_to_document_root} =~ (.*[^\/])\/+$ ]]
     then
-        path_to_document_root="${path_to_document_root}/"
+        path_to_document_root=${BASH_REMATCH[1]}
     fi
+    path_to_document_root="${path_to_document_root}/"
+
 }
 
 addSlash
@@ -51,10 +54,10 @@ server {\n
     \tssl_ciphers \"ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA\";\n
     \t# @todo Please verify your path keys / certificates\n
     \tssl_certificate     ${path_to_certs}${company_name}-${year}-fullchain.crt;\n
-    \tssl_certificate_key ${path_to_certs}${company_name}/${company_name}-${year}.key;\n
+    \tssl_certificate_key ${path_to_certs}${company_name}-${year}.key;\n
 	\tserver_name ${webHost};\n
     \t# @todo Please verify your Document Root\n
-    \troot ${path_to_document_root}${company_name};\n
+    \troot ${path_to_document_root};\n
 }\n"
 
 apache="
@@ -78,7 +81,7 @@ apache="
   \tServerName ${webHost}\n
   \tServerAlias ${hostname}\n
   \t# @todo Please verify your Document Root\n
-  \tDocumentRoot ${path_to_document_root}${company_name}\n
+  \tDocumentRoot ${path_to_document_root}\n
 \n
   \tSSLEngine on\n
     \t# @todo Please verify your path keys / certificates\n
@@ -129,4 +132,4 @@ echo -e $apache > ./serverTemplates/apache/${company_name}/${company_name}.conf.
 createdFile_message ./serverTemplates/apache/${company_name}/${company_name}.conf.template
 echo -e $apache_htaccess > ./serverTemplates/apache/${company_name}/${company_name}.htaccess.template
 createdFile_message ./serverTemplates/apache/${company_name}/${company_name}.htaccess.template
-echo -e "After all modification done, check your configuration with https://www.sslshopper.com/ssl-checker.html#hostname=www.${hostname}"
+echo -e "After all modification server conf are done,\n check your configuration with https://www.sslshopper.com/ssl-checker.html#hostname=${webHost}"

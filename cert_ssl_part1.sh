@@ -13,7 +13,7 @@ year=$(date +"%Y")
 path_to_pki_tls_certificates_directory=''
 # example : company_name='facebook'
 company_name=''
-# example : section_organisation_unit_name='EC' ==> Expert Comptable
+# example : company_unit_name='EC' ==> Expert Comptable
 company_unit_name=''
 # example : hostname_company='facebook.com'  ==>  url without www.
 hostname_company=''
@@ -72,18 +72,19 @@ getOptions() {
     done
 }
 
-addPathSlash() {
-    if [[ !(${path_to_pki_tls_certificates_directory} =~ (.*)\/$) ]]
+addSlash() {
+    if [[ ${path_to_pki_tls_certificates_directory} =~ (.*[^\/])\/+$ ]]
     then
-        path_to_pki_tls_certificates_directory="${path_to_pki_tls_certificates_directory}/"
+        path_to_pki_tls_certificates_directory=${BASH_REMATCH[1]}
     fi
+    path_to_pki_tls_certificates_directory="${path_to_pki_tls_certificates_directory}/"
 
 }
 
 moveCerts() {
     if [[ ${path_to_pki_tls_certificates_directory} != './' && ${path_to_pki_tls_certificates_directory} != '.' ]]
     then
-        addPathSlash
+        addSlash
         if [[ !(-d ${path_to_pki_tls_certificates_directory}${company_name}) ]]
         then
             mkdir ${path_to_pki_tls_certificates_directory}${company_name}
@@ -140,7 +141,7 @@ createdFile_message() {
 generateCertificate() {
     ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
     moveCerts
-    addPathSlash
+    addSlash
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
     # ...
         echo -e $(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr) | xclip -selection clipboard

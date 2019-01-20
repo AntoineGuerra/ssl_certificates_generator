@@ -75,6 +75,9 @@ email='example@example.ex'
 
 # Certificate Password
 password='MyP4455W0Rd!'
+
+# If you want Enable conf generator for apache | nginx
+use_conf_generator=true
 ```
 
 ##### ONLY IF you've to generate multi certificate :
