@@ -40,14 +40,24 @@ checkCertFilesData() {
 
 
 # $1 = path_to_certificates_directory
+# $2 = value
 createVal() {
     varName=$1
+    value=$2
     echo -ne "${color_default}Type ${color_success}${varName//_/ }${color_default} and press ${color_success}ENTER :${color_default}\n"
-    if [[ ${path_to_certificates_directory} != '' && ${varName} = 'path_to_certificates_directory' ]]
+    if [[ ${path_to_certificates_directory} != '' && ${varName} = 'path_to_certificates_directory' && -d ${path_to_certificates_directory} ]]
     then
         read -e -r -p "$ " -i ${path_to_certificates_directory} result
+    elif [[ $value ]]
+    then
+        read -e -r -p "$ " -i $value result
     else
         read -e -r -p "$ " result
+    fi
+    if [[ $result = '' ]]
+    then
+        echo -e "${color_error} ERROR !\n${varName//_/ } could not be empty !"
+        createVal $1 $2
     fi
     eval "${varName}"="${result}"
     echo -ne "${color_default}"
@@ -55,10 +65,11 @@ createVal() {
 
 getOptions() {
     options=('path_to_certificates_directory')
-    for option in ${options[@]};
-    do
-        createVal ${option}
-    done
+#    for option in ${options[@]};
+#    do
+#        createVal ${option}
+#    done
+    createVal 'path_to_certificates_directory' './downloadedCertificate/'
 }
 
 
@@ -134,11 +145,7 @@ createFullChain() {
             then
                 mkdir ${path_to_certificates_directory}${company_name}
             fi
-            if [[ $useConfGenerator = true ]]
-            then
-                createVal 'hostname'
-                ./conf_generator.sh ${company_name} ${hostname}
-            fi
+
             checkFile ${certificate}
             checkFile ${name_of_middle_certificate}
             cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt
@@ -147,6 +154,13 @@ createFullChain() {
             createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt"
             cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem
             createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem"
+            if [[ $useConfGenerator = true ]]
+            then
+                createVal 'hostname_without_www' $fileName
+                createVal 'path_to_certificate_in_server' "/etc/pki/tls/certs/${company_name}/"
+                createVal 'document_website_root_in_server' "/var/www/html/${company_name}/"
+                ./conf_generator.sh ${company_name} ${hostname_without_www} ${path_to_certificate_in_server} ${document_website_root_in_server}
+            fi
         fi
     done
 

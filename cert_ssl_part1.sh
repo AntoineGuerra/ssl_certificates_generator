@@ -120,6 +120,23 @@ checkCertFilesData() {
     done
 }
 
+# $1 = file created
+createdFile_message() {
+    file=$1
+    if [[ -f $file ]]
+    then
+        textResult="${color_success}${company_name}.csr generated with success !"
+        textResult="${textResult}${color_info} in ${file}\n"
+        textResult="${textResult}${color_info}The following file content of ${color_success}${company_name}.csr${color_info} was copy to your clipboard\n"
+        textResult="${textResult}${color_default}To send at SSL distributor example : GANDI SSL certificate => https://shop.gandi.net/fr/8d46f180-c3c1-11e7-9db0-00163e6dc886/certificate/create"
+    else
+        textResult="${color_error}ERROR ! The ${company_name}.csr cannot create\n"
+        textResult="${textResult}${color_warning}Please try again OR contact admin of this script${color_default}"
+    fi
+    echo -e "${textResult}"
+    read -n 1 -s -r -p "Press any key to continue"
+}
+
 generateCertificate() {
     ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
     moveCerts
@@ -131,12 +148,7 @@ generateCertificate() {
     # Mac OSX
         echo -e "$(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr)" | pbcopy -selection clipboard
     fi
-    textResult="${color_success}${company_name}.csr generated with success !"
-    textResult="${textResult}${color_info} in ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr\n"
-    textResult="${textResult}${color_info}The following file content of ${color_success}${company_name}.csr${color_info} was copy to your clipboard\n"
-    textResult="${textResult}${color_default}To send at SSL distributor example : GANDI SSL certificate => https://shop.gandi.net/fr/8d46f180-c3c1-11e7-9db0-00163e6dc886/certificate/create"
-    echo -e "${textResult}"
-    read -n 1 -s -r -p "Press any key to continue"
+    createdFile_message "${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr"
 }
 
 if [[ $1 = '-h' || $1 = '--help' || $1 = '-help' ]]
@@ -164,9 +176,14 @@ if [[ ${#certificatesFile[@]} -eq 0 ]]
 then
     getOptions
     generateCertificate
+    echo -e "\n${color_info}If your server run on nginx Don't forget add this to your conf :
+    ${color_default}location ^~ /.well-known/pki-validation/ {
+        allow all;
+        default_type "text/plain";
+    }"
     echo -e "${color_default}Do you want generate another certificate ? :"
     read -e -r -p "$ " result
-    if [[ ${result} = 'y' || ${result} = 'Y' || ${result} = 'yes' || ${result} = 'YES' ]]
+    if [[ ${result} =~ ^[yY]{1}[eE]?[sS]?.*$ ]]
     then
         ./cert_ssl_part1.sh ${path_to_pki_tls_certificates_directory}
     else
