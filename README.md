@@ -20,53 +20,84 @@ $ cd ssl_certificates_generator
 
 ##### BASH version >= 4.0 is required
 To update it please run :
-###### On Linux
+###### On Linux, Debian, Ubuntu
 ```
-$ sudo apt-get update && sudo apt-get install --only-upgrade bash
+$ sudo apt-get autoclean
+$ sudo apt-get update
+$ sudo apt-get install --only-upgrade bash
+$ sudo apt-get upgrade
 ```
+###### On CentOS Fedora
+```
+$ sudo yum -y update bash
+```
+
 ###### On MAC OS 
-consider you have brew installed <https://brew.sh/>
+Consider you have brew installed https://brew.sh/
 ```
 $ brew update && brew install bash
 ```
 ##### Expect is required :
-###### On Linux
+###### On Linux, Debian :
 ```
-$ sudo apt-get update && sudo apt-get install expect
+$ sudo apt-get update 
+$ sudo apt-get install expect
 ```
+##### On Ubuntu :
+```
+
+```
+##### On Windows :
+Please go to <a href="https://core.tcl.tk/expect/index?name=Expect#windows">Expect Web Site</a>
+
 ###### On MAC OS
-consider you have brew installed <https://brew.sh/>
+Consider you have <a href="https://brew.sh/">Brew</a> installed
 ```
 $ brew install expect
 ```
 ##### Xclip is required
-###### On Linux
+###### On Arch Linux
 ```
-$ sudo apt-get install xclip 
+$ sudo pacman xclip xsel
 ```
+###### On Fedora
+```
+$ sudo dnf xclip xsel
+```
+###### On Debian, Ubuntu, Linux Mint:
+```
+$ sudo apt install xclip xsel
+```
+
 ###### On MAC OS
-Consider you have pbcopy installed
+Consider you have **pbcopy** installed<br>
+To check :
+```
+$ echo "test" | pbcopy -selection clipboard
+```
+Paste the selection with cmd + V <br> If your clipboard contain **test**, the **pbcopy** Library is already **installed**
+
 ### Installing
-Please run :
+Please **Run** :
 ```
 $ cd PATH/TO/ssl_certificates_generator/
 $ chmod +x *.sh
 ```
 #### Step 1 
-The step 1 generate your `${company_name}.csr` and `${company_name}-${currentYear}.key`<br>
+The step 1 **generate** your **CSR** (`${company_name}.csr`) and **KEY** (`${company_name}-${currentYear}.key`)<br>
 ##### Please configure the `config.conf`
-Run :
+**Run** (**two** possibilities) :
 ```
 $ cp config.conf.sample config.conf
 ```
-OR 
+**OR** 
 ```
 $ cat config.conf.sample > config.conf
 ```
-AND <br>
+**AND** <br>
 Configure your data in config.conf file
 
-Example config.conf :
+#####Example config.conf :
 ```
 path_to_pki_tls_certificates_directory='./newCertificates/'
 
@@ -85,17 +116,17 @@ Prepare your certificates, run :
 ```
 $ cd PATH/TO/ssl_certificates_generator/newCertificates/
 ```
-AND 
+**AND** 
 ```
 $ cp certificate.certgen.sample certificate.certgen
 $ cp certificate2.certgen.sample certificate2.certgen
 ```
-OR 
+**OR** 
 ```
 $ cat certificate.certgen.sample > certificate.certgen
 $ cat certificate.certgen.sample > certificate2.certgen
 ```
-certificate.certgen example :
+##### certificate.certgen example :
 ```
 # Company country (2 letters)
 country='FR';
@@ -118,12 +149,12 @@ Please replace data of each file by your data
 $ PATH/TO/ssl_certificates_generator/cert_ssl_part1.sh
 ```
 #### Step 2
-The Step 2 create the : `certificate-${currentYear}-fullchain.crt` (full chain file) with an `middleCertificate.pem` and multi `certificate.crt`
+The Step 2 create the : `certificate-${currentYear}-fullchain.crt` (**full chain** files) with **one** `middleCertificate.pem` and **multi** `certificate.crt`
 
 
-Download and put all your certificate file in the same directory potentially in : 
+Download and put all your **certificate file** in the **same directory** potentially in : 
 
-Please have sure You've one `middleCertificate.pem` and one or more `certificate.crt`
+Please have sure You've **one** `middleCertificate.pem` and **one or more** `certificate.crt`
 ```
 ssl_certificate_generator/downloadedCertificate/
 ```
