@@ -33,7 +33,7 @@ $ sudo yum -y update bash
 ```
 
 ###### On MAC OS 
-Consider you have brew installed https://brew.sh/
+Consider you have [Brew installed](https://brew.sh/)
 ```
 $ brew update && brew install bash
 ```
@@ -43,15 +43,16 @@ $ brew update && brew install bash
 $ sudo apt-get update 
 $ sudo apt-get install expect
 ```
-##### On Ubuntu :
+###### On Ubuntu :
 ```
-
+$ sudo apt-get update -y
+$ sudo apt-get install -y expect
 ```
-##### On Windows :
-Please go to <a href="https://core.tcl.tk/expect/index?name=Expect#windows">Expect Web Site</a>
+###### On Windows :
+Please go to [Expect Web Site](https://core.tcl.tk/expect/index?name=Expect#windows)
 
 ###### On MAC OS
-Consider you have <a href="https://brew.sh/">Brew</a> installed
+Consider you have [Brew installed](https://brew.sh/)
 ```
 $ brew install expect
 ```

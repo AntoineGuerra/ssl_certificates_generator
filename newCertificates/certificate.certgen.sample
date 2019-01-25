@@ -10,4 +10,4 @@ company_name='ExampleCompany';
 company_unit_name='TE';
 # Company website Hostname
 # Example : 'example.fr'
-hostname_company='example.fr'
+hostname_company='example.fr';

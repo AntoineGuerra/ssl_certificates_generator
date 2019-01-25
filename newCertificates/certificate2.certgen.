@@ -3,11 +3,11 @@ country='FR';
 # Origin company state (leave blank for france)
 state='';
 # Origin company city
-city='Example2';
+city='testcity';
 # Company name
 company_name='ExampleCompany2';
 # Company Unit Name
 company_unit_name='TE';
 # Company website Hostname
 # Example : 'example.fr'
-hostname_company='example2.fr';
+hostname_company='example2.fr'

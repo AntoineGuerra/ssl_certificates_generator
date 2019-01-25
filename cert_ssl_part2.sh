@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
-color_default='\033[0m'
-color_warning='\033[0;33m'
-color_info='\033[0;36m'
-color_success='\033[0;32m'
-color_error='\033[0;31m'
+
 
 path_to_certificates_directory=''
 name_of_middle_certificate=''
 certificates=()
 
+source ./kernel.sh
 
 addSlash() {
     if [[ ${path_to_certificates_directory} =~ (.*[^\/])\/+$ ]]
@@ -17,6 +14,7 @@ addSlash() {
     fi
     path_to_certificates_directory="${path_to_certificates_directory}/"
 }
+
 
 # $1 = file data checked
 checkCertFilesData() {
@@ -30,12 +28,16 @@ checkCertFilesData() {
     fi
     for data in ${datas[@]}
     do
-        value=$(eval echo "\$$data")
+#        value=$(eval echo "\$$data")
+        value=$(echoDataByStr $data)
+        echo "data $data"
+        echo "value $value"
         if [[ $value = '' ]]
         then
-            echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
+            echo -e "There is an ${color_error}ERROR ${color_default} in ${color_info}${file}"
             echo -e "${color_error}${data//_/ } is REQUIRED !"
             exit
+
         elif [[ $data = 'use_conf_generator' && ($value != true && $value != false) ]]
         then
             echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
@@ -44,7 +46,6 @@ checkCertFilesData() {
         fi
     done
 }
-
 
 # $1 = path_to_certificates_directory
 # $2 = value
@@ -80,7 +81,8 @@ getOptions() {
 #    do
 #        createVal ${option}
 #    done
-    createVal 'path_to_certificates_directory' './downloadedCertificate/'
+#    createVal 'path_to_certificates_directory' './downloadedCertificate/'
+    prompt_dir 'path_to_certificates_directory' './downloadedCertificate/'
 }
 
 
@@ -146,6 +148,7 @@ createFullChain() {
     if [[ ${result} =~ ^[yY]{1}e?s?.*$ ]]
     then
         use_conf_generator=true
+        checkLastUse 'conf_gen'
         echo -e "${color_success}You use the conf template generator"
     else
         echo -e "${color_warning}You don't use the conf template generator"
@@ -189,6 +192,8 @@ if [[ $1 ]]
 then
     path_to_certificates_directory=$1
 fi
+
+checkLastUse 'part2'
 
 checkCertFilesData "./config.conf"
 getOptions
