@@ -98,7 +98,7 @@ $ cat config.conf.sample > config.conf
 **AND** <br>
 Configure your data in config.conf file
 
-##### Example config.conf :
+##### Example config.conf
 ```
 path_to_pki_tls_certificates_directory='./newCertificates/'
 
@@ -112,7 +112,7 @@ password='MyP4455W0Rd!'
 use_conf_generator=true
 ```
 
-##### ONLY IF you've to generate multi certificate :
+##### ONLY IF you've to generate multi certificate
 Prepare your certificates, run :
 ```
 $ cd PATH/TO/ssl_certificates_generator/newCertificates/
