@@ -5,6 +5,7 @@ color_warning='\033[0;33m'
 color_info='\033[0;36m'
 color_success='\033[0;32m'
 color_error='\033[0;31m'
+
 certificate_certgen_sample="# Origin company country (2 letters)\n
 country='FR';\n
 # Origin company state (leave blank for france)\n
@@ -87,7 +88,7 @@ create_prompt_message() {
     then
         prompt_message="${color_error}${text}${color_default}"
     else
-        prompt_message="${color_default}Type ${color_success}${text}${color_default} and press ${color_success}ENTER :"
+        prompt_message="${color_default}Type ${color_success}${text}${color_default} and press ${color_success}ENTER :${color_default}"
     fi
 }
 
@@ -298,7 +299,7 @@ checkRemovedDirectorys() {
     local directorys=$(find ${temp_dir}* -type d 2> /dev/null)
     if [[ $directorys != '' ]]
     then
-        echo -e "${color_error}Can't remove these following directory :\n ${color_warning}${directorys[@]}"
+        echo -e "${color_error}Can't remove these following directory :\n ${color_warning}${directorys[@]}${color_default}"
 #        for dir in $directorys[@]
 #        do
 #            echo $dir
@@ -315,7 +316,7 @@ checkRemovedFiles() {
     local files=$(find ${temp_file}*.${ext} -type f 2> /dev/null)
     if [[ $files != '' ]]
     then
-        echo -e "${color_error}Can't remove these following file :\n ${color_warning}${files[@]}"
+        echo -e "${color_error}Can't remove these following file :\n ${color_warning}${files[@]}${color_default}"
 #        for dir in $files[@]
 #        do
 #            echo $dir
@@ -326,10 +327,40 @@ checkRemovedFiles() {
 #checkRemovedFiles ./newCertificates/ 'certgen'
 
 clean_part1() {
-    rm -rf ./newCertificates/*/ ./newCertificates/*.certgen
 
-    checkRemovedDirectorys ./newCertificates/
-    checkRemovedFiles ./newCertificates/ 'certgen'
+    local timestamp=$(date +%s)
+    local max_expiration_time=604800
+
+    for cert in ./newCertificates/*.certgen ./newCertificates/*/
+    do
+        local last_edit=$((${timestamp} - $(stat -f "%m" "${cert}")))
+        if [[ ${last_edit} -gt ${max_expiration_time} ]]
+        then
+            if [[ ! (-d ./savedCertificate/) ]]
+            then
+                mkdir ./savedCertificate/
+            fi
+            if [[ ! (-d ./savedCertificate/part1) ]]
+            then
+                mkdir ./savedCertificate/part1
+            fi
+            mv ${cert} ./savedCertificate/part1/
+        else
+            local last_edit_h=$((${last_edit} / 3600))
+            if [[ $last_edit_h -gt 0 ]]
+            then
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_h} hours ${color_default}"
+            else
+                local last_edit_m=$((${last_edit} / 60))
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_m} min ${color_default}"
+            fi
+            echo -e "${color_warning}Please verify your file : ${cert}${color_default}"
+            read -n 1 -s -r -p "Press any key to continue"
+        fi
+    done
+
+#    checkRemovedDirectorys ./newCertificates/
+#    checkRemovedFiles ./newCertificates/ 'certgen'
 
     if [[ -f ./newCertificates/certificate.certgen.sample ]]
     then
@@ -344,17 +375,73 @@ clean_part1() {
 
 
 clean_part2() {
-    rm -rf ./downloadedCertificate/*/ ./downloadedCertificate/*.pem ./downloadedCertificate/*.crt
-    checkRemovedDirectorys ./downloadedCertificate/
-    checkRemovedFiles ./downloadedCertificate/ 'pem'
-    checkRemovedFiles ./downloadedCertificate/ 'crt'
+#    rm -rf ./downloadedCertificate/*/
+    local timestamp=$(date +%s)
+    local max_expiration_time=604800
+
+    for cert in ./downloadedCertificate/*.pem ./downloadedCertificate/*.crt ./downloadedCertificate/*/
+    do
+        local last_edit=$((${timestamp} - $(stat -f "%m" "${cert}")))
+        if [[ ${last_edit} -gt ${max_expiration_time} ]]
+        then
+            if [[ ! (-d ./savedCertificate/) ]]
+            then
+                mkdir ./savedCertificate/
+            fi
+            if [[ ! (-d ./savedCertificate/part2) ]]
+            then
+                mkdir ./savedCertificate/part2
+            fi
+            mv ${cert} ./savedCertificate/part2/
+        else
+            local last_edit_h=$((${last_edit} / 3600))
+            if [[ $last_edit_h -gt 0 ]]
+            then
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_h} hours ${color_default}"
+            else
+                local last_edit_m=$((${last_edit} / 60))
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_m} min ${color_default}"
+            fi
+            echo -e "${color_warning}Please verify your file : ${cert}${color_default}"
+            read -n 1 -s -r -p "Press any key to continue"
+        fi
+    done
+#    checkRemovedDirectorys ./downloadedCertificate/
+#    checkRemovedFiles ./downloadedCertificate/ 'pem'
+#    checkRemovedFiles ./downloadedCertificate/ 'crt'
 }
 
 clean_conf_gen() {
-    rm -rf ./serverTemplates/apache/*/ ./serverTemplates/nginx/*/
-    checkRemovedDirectorys ./serverTemplates/apache/
-    checkRemovedDirectorys ./serverTemplates/nginx/
-
+#    rm -rf ./serverTemplates/apache/*/ ./serverTemplates/nginx/*/
+#    checkRemovedDirectorys ./serverTemplates/apache/
+#    checkRemovedDirectorys ./serverTemplates/nginx/
+    for cert in ./serverTemplates/apache/*/ ./serverTemplates/nginx/*/
+    do
+        local last_edit=$((${timestamp} - $(stat -f "%m" "${cert}")))
+        if [[ ${last_edit} -gt ${max_expiration_time} ]]
+        then
+            if [[ ! (-d ./savedCertificate/) ]]
+            then
+                mkdir ./savedCertificate/
+            fi
+            if [[ ! (-d ./savedCertificate/conf_gen) ]]
+            then
+                mkdir ./savedCertificate/conf_gen
+            fi
+            mv ${cert} ./savedCertificate/conf_gen/
+        else
+            local last_edit_h=$((${last_edit} / 3600))
+            if [[ $last_edit_h -gt 0 ]]
+            then
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_h} hours ${color_default}"
+            else
+                local last_edit_m=$((${last_edit} / 60))
+                echo -e "${color_warning}WARNING ! ${cert} is last modified at ${last_edit_m} min ${color_default}"
+            fi
+            echo -e "${color_warning}Please verify your file : ${cert}${color_default}"
+            read -n 1 -s -r -p "Press any key to continue"
+        fi
+    done
 }
 
 #last_time_use_part1=0
@@ -365,24 +452,23 @@ checkLastUse() {
     script=$1
     varname="last_time_use_${script}"
 
-#    source ./.time.tm
     timeTm=$(cat ./.time.tm)
     timestamp=$(date +%s)
-    echo -e $timeTm
     if [[ $timeTm =~ (.*)$varname\=([0-9]+)\;{1}(.*)$ ]]
     then
         local newFile="${BASH_REMATCH[1]}${varname}=${timestamp};${BASH_REMATCH[3]}"
 #        newFile=${newFile// /}
-        echo  ${newFile//[[:space:]]/}> ./.time.tm
+        echo  ${newFile//[[:space:]]/} > ./.time.tm
         local lastUse=${BASH_REMATCH[2]}
         local time_dont_use=$((${timestamp} - ${lastUse}))
         local max_expiration_time=604800
 
-        echo "last time use ${BASH_REMATCH[2]}"
-        echo "timestamp ${timestamp}"
-        echo "time dont use ${time_dont_use}"
-        echo "one week time ${max_expiration_time}"
-        echo "cond $(($time_dont_use > $max_expiration_time))"
+        local secondFile=""
+#        if [[ ${script} = "conf_gen" || ${script} = "part2" ]]
+#        then
+#            local error_message="${color_warning}Please run :\n$ ./cert_ssl_part2.sh${color_default}"
+#        else
+#        fi
 
         if [[ ($time_dont_use -gt $max_expiration_time) && ${lastUse} -gt 0 ]]
         then
@@ -397,27 +483,59 @@ checkLastUse() {
                 date_format='month'
                 day_dont_use=$(( $day_dont_use / 30 ))
             fi
-            echo -e "${color_warning}Your last use of ${script} script is ${color_error}${day_dont_use} ${color_warning}${date_format} past"
+            echo -e "${color_warning}Your last use of ${script} script is ${color_error}${day_dont_use} ${color_warning}${date_format} past${color_default}"
             echo -e "${color_warning}Save old use is useless and can create bugs !\n${color_info}Do you want clean use ?${color_default}"
             read -e -r -p "$ " -i "yes" result
             if [[ ${result} =~ ^[yY]{1}e?s?.*$ ]]
             then
                 clean_${script}
+#                if [[ ${script} = "conf_gen" || ${script} = "part2" ]]
+#                then
+#                    die "${color_warning}Please run :\n$ ./cert_ssl_part2.sh${color_default}"
+#                elif [[ ${script} = "part1" ]]
+#                then
+#                    die "${color_warning}Please Edit your ./newCertificates/certificate.certgen\n And run :\n$ ./cert_ssl_part1.sh${color_default}"
+#                fi
             fi
         elif [[ ${lastUse} = 0 ]]
         then
-            echo -e "${color_info}Welcome $(whoami) ;)${color_default}\nYou can find all your need here https://github.com/AntoineGuerra/ssl_certificates_generator#getting-started"
+            echo -e "${color_info}Welcome $(whoami) ;)${color_default}\nYou can find all you're need here https://github.com/AntoineGuerra/ssl_certificates_generator#getting-started${color_default}"
         fi
     else
         echo "${varname}=${timestamp};" >> ./.time.tm
     fi
 }
-
-
+die() {
+    echo -e "${color_error}$1"
+    exit
+}
 checkScript() {
-file=$1
-    if [[ !(-x $file) ]]
+    file=$1
+    if [[ -f ${file} && ! (-x $file) ]]
     then
+#        echo -e "chmod +x $file"
         chmod +x $file
     fi
+}
+
+# Check if file exist and if is not empty
+# $1 = file_to_check
+checkFile() {
+    file=$1
+    if [[ ! (-f ${file}) || $(cat ${file}) = '' ]]
+    then
+        if [[ $2 ]]
+        then
+            eval "$2"="false"
+        fi
+        echo -e "${color_error}The file : ${file} does not exist or is empty${color_default}"
+        exit
+    else
+        if [[ $2 ]]
+        then
+            eval "$2"="true"
+        fi
+    fi
+
+
 }

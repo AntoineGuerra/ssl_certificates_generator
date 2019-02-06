@@ -119,9 +119,9 @@ createdFile_message() {
     file=$1
     if [[ -f $file ]]
     then
-        echo -e "${color_success}File created with success ${color_info}${file}"
+        echo -e "${color_success}File created with success ${color_info}${file}${color_default}"
     else
-        echo -e "${color_error}ERROR !${color_default}Cannot create file ${color_info}${file}"
+        echo -e "${color_error}ERROR !${color_default}Cannot create file ${color_info}${file}${color_default}"
     fi
 
 }

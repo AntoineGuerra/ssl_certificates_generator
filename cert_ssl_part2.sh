@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
+color_default='\033[0m'
+color_warning='\033[0;33m'
+color_info='\033[0;36m'
+color_success='\033[0;32m'
+color_error='\033[0;31m'
 
 path_to_certificates_directory=''
 name_of_middle_certificate=''
 certificates=()
 
+if [[ ! (-f kernel.sh) ]]
+then
+    echo -e "${color_error}You must have kernel.sh !${color_default}"
+fi
 source ./kernel.sh
 
 addSlash() {
@@ -28,20 +37,17 @@ checkCertFilesData() {
     fi
     for data in ${datas[@]}
     do
-#        value=$(eval echo "\$$data")
-        value=$(echoDataByStr $data)
-        echo "data $data"
-        echo "value $value"
+        local value=$(echoDataByStr $data)
         if [[ $value = '' ]]
         then
             echo -e "There is an ${color_error}ERROR ${color_default} in ${color_info}${file}"
-            echo -e "${color_error}${data//_/ } is REQUIRED !"
+            echo -e "${color_error}${data//_/ } is REQUIRED !${color_default}"
             exit
 
         elif [[ $data = 'use_conf_generator' && ($value != true && $value != false) ]]
         then
-            echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}"
-            echo -e "${color_error}${data//_/ } could be a boolean !"
+            echo -e "There is an${color_error} ERROR ${color_default} in ${color_info}${file}${color_default}"
+            echo -e "${color_error}${data//_/ } could be a boolean !${color_default}"
             exit
         fi
     done
@@ -64,11 +70,11 @@ createVal() {
     fi
     if [[ $result = '' ]]
     then
-        echo -e "${color_error} ERROR !\n${varName//_/ } could not be empty !"
+        echo -e "${color_error} ERROR !\n${varName//_/ } could not be empty !${color_default}"
         createVal $1 $2
     elif [[ $varName = document_website_root_in_server && $result =~ (.*[^\/])\/+$ ]]
     then
-        echo -e "${color_error} ERROR !\n${varName//_/ } could not end by '/' !\n${color_warning}Try with ${BASH_REMATCH[1]}"
+        echo -e "${color_error} ERROR !\n${varName//_/ } could not end by '/' !\n${color_warning}Try with ${BASH_REMATCH[1]}${color_default}"
         createVal $1 ${BASH_REMATCH[1]}
     fi
     eval "${varName}"="${result}"
@@ -95,7 +101,7 @@ renameCertificates() {
         then
             fileName=${BASH_REMATCH[2]}
             path=${BASH_REMATCH[1]}
-            if [[ !(${path} =~ (.*)\/$) ]]
+            if [[ ! (${path} =~ "(.*)\/$") ]]
             then
                 path="${path}/"
             fi
@@ -108,17 +114,7 @@ renameCertificates() {
     done
 }
 
-# Check if file exist and if is not empty
-# $1 = file_to_check
-checkFile() {
-    file=$1
-    if [[ !(-f ${file}) || $(cat ${file}) = '' ]]
-    then
-        echo -e "${color_error}The file : ${file} does not exist or is empty"
-        exit
-    fi
 
-}
 
 
 # $1 = PATH/TO/file
@@ -126,9 +122,9 @@ createdFileMessage() {
     file=$1
     if [[ -f ${file} ]]
     then
-        echo -e "${color_success}File created with success ${color_info}${file}"
+        echo -e "${color_success}File created with success ${color_info}${file}${color_default}"
     else
-        echo -e "${color_error}ERROR !${color_default}Cannot create file ${color_info}${file}"
+        echo -e "${color_error}ERROR ! ${color_default}Cannot create file ${color_info}${file}${color_default}"
     fi
 }
 
@@ -149,9 +145,9 @@ createFullChain() {
     then
         use_conf_generator=true
         checkLastUse 'conf_gen'
-        echo -e "${color_success}You use the conf template generator"
+        echo -e "${color_success}You use the conf template generator${color_default}"
     else
-        echo -e "${color_warning}You don't use the conf template generator"
+        echo -e "${color_warning}You don't use the conf template generator${color_default}"
         use_conf_generator=false
     fi
     for certificate in ${certificates[@]}
@@ -166,20 +162,29 @@ createFullChain() {
                 mkdir ${path_to_certificates_directory}${company_name}
             fi
 
-            checkFile ${certificate}
-            checkFile ${name_of_middle_certificate}
-            cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt
-            createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt"
-            cat ${certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt
-            createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt"
-            cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem
-            createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem"
+            checkFile ${certificate} "certificate"
+            checkFile ${name_of_middle_certificate} "middle_certificate"
+            if [[ ${certificate} = true && ${middle_certificate} = true ]]
+            then
+                cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt
+                createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt"
+                cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem
+                createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.pem"
+            elif [[ ${certificate} = true ]]
+            then
+                cat ${certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt
+                createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y").crt"
+            fi
             if [[ $use_conf_generator = true ]]
             then
-                createVal 'hostname_without_www' $fileName
+                createVal 'hostname_without_www' ${fileName}
                 createVal 'path_to_certificate_in_server' "/etc/pki/tls/certs/${company_name}"
                 createVal 'document_website_root_in_server' "/var/www/html/${company_name}"
-                ./conf_generator.sh ${company_name} ${hostname_without_www} ${path_to_certificate_in_server} ${document_website_root_in_server}
+                checkScript ./conf_generator.sh
+                if [[ -f ./conf_generator.sh ]]
+                then
+                    ./conf_generator.sh ${company_name} ${hostname_without_www} ${path_to_certificate_in_server} ${document_website_root_in_server}
+                fi
             fi
         fi
     done

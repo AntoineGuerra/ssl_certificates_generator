@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
+color_default='\033[0m'
+color_warning='\033[0;33m'
+color_info='\033[0;36m'
+color_success='\033[0;32m'
+color_error='\033[0;31m'
 
+if [[ ! (-f kernel.sh) ]]
+then
+    echo -e "${color_error}You must have kernel.sh !${color_default}"
+fi
 source ./kernel.sh
 
 # Current Year
@@ -31,7 +40,7 @@ ${color_info}2${color_default} The Hostname Domain Company :
 createVal() {
     varName=$1
     rec=false
-    echo -ne "${color_default}Type ${color_success}${varName//_/ }${color_default} and press ${color_success}ENTER :\n"
+    echo -ne "${color_default}Type ${color_success}${varName//_/ }${color_default} and press ${color_success}ENTER :\n${color_default}"
     if [[ ${varName} = 'path_to_pki_tls_certificates_directory' && ${path_to_pki_tls_certificates_directory} != '' ]]
     then
         read -e -r -p "$ " -i ${path_to_pki_tls_certificates_directory} result
@@ -40,11 +49,11 @@ createVal() {
         read -e -r -p "$ " result
         if [[ !(-d ${result}) && ${varName} = 'path_to_pki_tls_certificates_directory' ]]
         then
-            echo -e "${color_error}This directory does not exist !"
+            echo -e "${color_error}This directory does not exist !${color_default}"
             exit
         elif [[ (${result} = '' && $varName != 'state') || $result =~ .*\s.* ]]
         then
-            echo -e "${color_error}This value could not be NULL OR contain white space!"
+            echo -e "${color_error}This value could not be NULL OR contain white space !${color_default}"
             createVal ${varName}
             rec=true
         elif [[ $varName = 'country' && !(${result} =~ ^.{2}$) ]]
@@ -105,14 +114,24 @@ moveCerts() {
     if [[ ${path_to_pki_tls_certificates_directory} != './' && ${path_to_pki_tls_certificates_directory} != '.' ]]
     then
         addSlash
-        if [[ !(-d ${path_to_pki_tls_certificates_directory}${company_name}) ]]
+        if [[ ! (-d ${path_to_pki_tls_certificates_directory}${company_name}) ]]
         then
             mkdir ${path_to_pki_tls_certificates_directory}${company_name}
         fi
-        mv ${company_name}-${year}.key ${path_to_pki_tls_certificates_directory}${company_name}/
-        mv ${company_name}.csr ${path_to_pki_tls_certificates_directory}${company_name}/
+        if [[ -f ./${company_name}-${year}.key ]]
+        then
+            mv ${company_name}-${year}.key ${path_to_pki_tls_certificates_directory}${company_name}/
+        else
+            echo -e "${color_error}ERROR ${company_name}-${year}.key does not exist !"
+        fi
+        if [[ -f ./${company_name}-${year}.key ]]
+        then
+            mv ${company_name}.csr ${path_to_pki_tls_certificates_directory}${company_name}/
+        else
+            echo -e "${color_error}ERROR ${company_name}.csr does not exist !"
+        fi
     else
-        if [[ !(-d ./${company_name}) ]]
+        if [[ ! (-d ./${company_name}) ]]
         then
             mkdir ./${company_name}
         fi
@@ -123,7 +142,7 @@ moveCerts() {
 # $1 = file data checked
 checkCertFilesData() {
     file=$1
-    echo -e "${color_info}Test ${file} Begining"
+    echo -e "${color_info}Test ${file} Begining${color_default}"
     if [[ ${file} = './config.conf' ]]
     then
         datas=('email')
@@ -151,10 +170,10 @@ checkCertFilesData() {
     prompt_result=''
     if [[ ${prompt_valid} = false ]]
     then
-        echo -e "${color_error}ERROR in ${file} Verifications"
+        echo -e "${color_error}ERROR in ${file} Verifications${color_default}"
         exit
     else
-        echo -e "${color_success}Success ${file} Verifications"
+        echo -e "${color_success}Success ${file} Verifications${color_default}"
     fi
 }
 
@@ -163,12 +182,12 @@ createdFile_message() {
     file=$1
     if [[ -f $file ]]
     then
-        textResult="${color_success}${company_name}.csr generated with success !"
-        textResult="${textResult}${color_info} in ${file}\n"
-        textResult="${textResult}${color_info}The following file content of ${color_success}${company_name}.csr${color_info} was copy to your clipboard\n"
-        textResult="${textResult}${color_default}To send at SSL distributor example : GANDI SSL certificate => https://shop.gandi.net/fr/00000000-0000-0000-0000-000000000000/certificate/create"
+        textResult="${color_success}${company_name}.csr generated with success !${color_default}"
+        textResult="${textResult}${color_info} in ${file}${color_default}\n"
+        textResult="${textResult}${color_info}The following file content of ${color_success}${company_name}.csr${color_info} was copy to your clipboard${color_default}\n"
+        textResult="${textResult}${color_default}To send at SSL distributor example : GANDI SSL certificate => https://shop.gandi.net/fr/00000000-0000-0000-0000-000000000000/certificate/create${color_default}"
     else
-        textResult="${color_error}ERROR ! The ${company_name}.csr cannot create\n"
+        textResult="${color_error}ERROR ! The ${company_name}.csr cannot create${color_default}\n"
         textResult="${textResult}${color_warning}Please try again OR contact admin of this script${color_default}"
     fi
     echo -e "${textResult}"
@@ -176,15 +195,35 @@ createdFile_message() {
 }
 
 generateCertificate() {
-    ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
+    checkScript ./newcert.expect
+    if [[ -f ./newcert.expect ]]
+    then
+        ./newcert.expect ${company_name} ${company_unit_name} ${hostname_company} ${year} ${country} ${city} ${email} ${state} ${password}
+    fi
     moveCerts
     addSlash
-    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    if [[ ! (-f ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr) ]]
+    then
+        echo -e "${color_error}ERROR ! Cannot create : ${color_warning}${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr${color_default}"
+    fi
+    if [[ ${OSTYPE} == "linux-gnu" ]]
+    then
     # ...
-        echo -e $(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr) | xclip -selection clipboard
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        checkFile "./${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr" "cert"
+        if [[ ${cert} = true ]]
+        then
+            echo -e $(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr) | xclip -selection clipboard
+        fi
+    elif [[ ${OSTYPE} == "darwin"* ]]
+    then
     # Mac OSX
-        echo -e "$(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr)" | pbcopy -selection clipboard
+        checkFile "./${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr" "cert"
+        if [[ ${cert} = true ]]
+        then
+            echo -e "$(cat ${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr)" | pbcopy -selection clipboard
+#        else
+#            echo -e "${color_error}ERROR "
+        fi
     fi
     createdFile_message "${path_to_pki_tls_certificates_directory}${company_name}/${company_name}.csr"
 }
@@ -202,12 +241,23 @@ fi
 checkLastUse 'part1'
 if [[ !(-f ./newcert.expect) ]]
 then
-    echo -e "${color_error}You should have newcert.expect in the same directory !"
-    exit;
+    echo -e "${color_error}ERROR ! You must have newcert.expect in the same directory !${color_default}"
+    exit
 fi
 
 certificatesFile=($(ls ./newCertificates/*.certgen 2> /dev/null))
 
+
+if [[ ! (-f ./config.conf) ]]
+then
+    if [[ -f ./config.conf.sample ]]
+    then
+        echo -e "${color_warning}Please run :\n${color_default}$ cp config.conf.sample config.conf\n${color_warning}Edit it :\n${color_default}$ vi config.conf"
+    else
+        echo -e "${color_warning}Please go here : https://github.com/AntoineGuerra/ssl_certificates_generator#example-configconf${color_default}"
+    fi
+    exit
+fi
 source ./config.conf
 checkCertFilesData ./config.conf
 if [[ ${#certificatesFile[@]} -eq 0 ]]
@@ -219,11 +269,11 @@ then
         allow all;
         default_type "text/plain";
     }"
-    echo -e "${color_default}Do you want generate another certificate ? :"
+    echo -e "${color_default}Do you want generate another certificate ? :${color_default}"
     read -e -r -p "$ " result
     if [[ ${result} =~ ^[yY]{1}[eE]?[sS]?.*$ ]]
     then
-
+        checkScript ./cert_ssl_part1.sh
         ./cert_ssl_part1.sh ${path_to_pki_tls_certificates_directory}
     else
         echo -e "Nice, all cards are in your hands"
