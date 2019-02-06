@@ -98,7 +98,7 @@ $ cat config.conf.sample > config.conf
 **AND** <br>
 Configure your data in config.conf file
 
-#####Example config.conf :
+##### Example config.conf :
 ```
 path_to_pki_tls_certificates_directory='./newCertificates/'
 
