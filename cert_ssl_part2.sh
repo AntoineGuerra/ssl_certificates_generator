@@ -162,9 +162,9 @@ createFullChain() {
                 mkdir ${path_to_certificates_directory}${company_name}
             fi
 
-            checkFile ${certificate} "certificate"
+            checkFile ${certificate} "certificate_test"
             checkFile ${name_of_middle_certificate} "middle_certificate"
-            if [[ ${certificate} = true && ${middle_certificate} = true ]]
+            if [[ ${certificate_test} = true && ${middle_certificate} = true ]]
             then
                 cat ${certificate} ${name_of_middle_certificate} > ${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt
                 createdFileMessage "${path_to_certificates_directory}${company_name}/${company_name}-$(date +"%Y")-fullchain.crt"

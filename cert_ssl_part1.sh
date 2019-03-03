@@ -124,7 +124,7 @@ moveCerts() {
         else
             echo -e "${color_error}ERROR ${company_name}-${year}.key does not exist !"
         fi
-        if [[ -f ./${company_name}-${year}.key ]]
+        if [[ -f ./${company_name}.csr ]]
         then
             mv ${company_name}.csr ${path_to_pki_tls_certificates_directory}${company_name}/
         else
@@ -138,6 +138,15 @@ moveCerts() {
     fi
 
 }
+#@todo # Various rewrite rules.
+#<IfModule mod_rewrite.c>
+#  RewriteEngine on
+
+  # Set "protossl" to "s" if we were accessed via https://.  This is used later
+  # if you enable "www." stripping or enforcement, in order to ensure that
+  # you don't bounce between http and https.
+ # RewriteRule ^ - [E=protossl]
+ # RewriteRule ^\.well-known\/pki-validation\/ - [L]
 
 # $1 = file data checked
 checkCertFilesData() {
@@ -264,11 +273,12 @@ if [[ ${#certificatesFile[@]} -eq 0 ]]
 then
     getOptions
     generateCertificate
-    echo -e "\n${color_info}If your server run on nginx Don't forget add this to your conf :
-    ${color_default}location ^~ /.well-known/pki-validation/ {
+    echo -e "\n${color_info}If you will use Gandi (verify method by file) forget add this to your conf :
+    ${color_info}NGINX : ${color_default}location ^~ /.well-known/pki-validation/ {
         allow all;
         default_type "text/plain";
-    }"
+    }\n
+    ${color_info}APACHE : ${color_default}RewriteRule ^\.well-known\/pki-validation\/ - [L]"
     echo -e "${color_default}Do you want generate another certificate ? :${color_default}"
     read -e -r -p "$ " result
     if [[ ${result} =~ ^[yY]{1}[eE]?[sS]?.*$ ]]
